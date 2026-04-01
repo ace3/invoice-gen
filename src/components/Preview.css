@@ -1,0 +1,132 @@
+.invoice {
+  background: #111111;
+  color: #e8e8e8;
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 48px 52px;
+  min-height: 297mm;
+  width: 100%;
+}
+
+/* Header */
+.inv-header { margin-bottom: 40px; }
+.inv-title-row { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.inv-logo { height: 48px; width: auto; object-fit: contain; border-radius: 4px; }
+.inv-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #f0f0f0;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+.inv-doc-type {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f0f0f0;
+  letter-spacing: -0.3px;
+}
+
+/* Meta */
+.inv-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 32px;
+}
+.meta-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #f0f0f0;
+  margin-bottom: 6px;
+}
+.meta-val {
+  font-size: 13px;
+  color: #888;
+  line-height: 1.7;
+  font-family: 'Courier New', monospace;
+}
+
+/* Table */
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 32px;
+}
+
+.inv-table thead tr {
+  background: #1c1c1c;
+}
+.inv-table th {
+  padding: 11px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #f0f0f0;
+  text-align: left;
+  border: 1px solid #2c2c2c;
+}
+.col-desc { width: 45%; }
+.col-qty  { width: 12%; }
+.col-rate { width: 22%; }
+.col-amount { width: 21%; }
+
+.inv-table tbody tr { background: #1a1a1a; }
+.inv-table tbody td {
+  padding: 11px 14px;
+  font-size: 13px;
+  color: #888;
+  border: 1px solid #2c2c2c;
+  font-family: 'Courier New', monospace;
+  vertical-align: middle;
+}
+.td-right { text-align: right; }
+
+/* Summary rows */
+.summary-row td {
+  background: #1a1a1a;
+  border: 1px solid #2c2c2c;
+}
+.summary-label {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #f0f0f0 !important;
+  text-align: right;
+}
+.summary-val {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #f0f0f0 !important;
+  text-align: right;
+}
+.total-row .summary-label,
+.total-row .summary-val {
+  font-weight: 800 !important;
+}
+.total-val { color: #f0f0f0 !important; }
+
+/* Payment box */
+.inv-payment {
+  background: #1a1a1a;
+  border: 1px solid #2c2c2c;
+  border-radius: 6px;
+  padding: 18px 20px;
+  margin-bottom: 24px;
+}
+.payment-heading {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f0f0f0;
+  margin-bottom: 8px;
+}
+.payment-line {
+  font-size: 13px;
+  color: #888;
+  line-height: 1.8;
+  font-family: 'Courier New', monospace;
+}
+
+/* Notes */
+.inv-notes {
+  font-size: 13px;
+  color: #666;
+  font-style: italic;
+  font-family: 'Courier New', monospace;
+}
