@@ -1,10 +1,13 @@
 import { forwardRef } from 'react'
 import './Preview.css'
 
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 const fmt = (dateStr) => {
   if (!dateStr) return ''
-  const d = new Date(dateStr + 'T00:00:00')
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+  const parts = dateStr.split('-').map(Number)
+  if (parts.length !== 3 || parts.some(isNaN)) return dateStr
+  const [year, month, day] = parts
+  return `${day} ${MONTHS[month - 1]} ${year}`
 }
 
 const Preview = forwardRef(function Preview({ form, currency, subtotal, discountAmount, taxAmount, total }, ref) {
