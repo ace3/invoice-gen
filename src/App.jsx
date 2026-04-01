@@ -37,61 +37,56 @@ export const DEFAULT_FORM = {
   ],
 }
 
-export default function App() {
-  const [invoices, setInvoices] = useState(() => {
-    try {
-      const saved = localStorage.getItem('invoiceHistory')
-      if (!saved) return []
+function getInitialAppState() {
+  let senderProfile = { fromName: '', fromPhone: '', fromEmail: '', logo: null }
+  try {
+    const saved = localStorage.getItem('senderProfile')
+    if (saved) senderProfile = JSON.parse(saved)
+  } catch (e) { /* ignore */ }
+
+  let invoices = []
+  try {
+    const saved = localStorage.getItem('invoiceHistory')
+    if (saved) {
       const parsed = JSON.parse(saved)
-      if (!Array.isArray(parsed)) return []
-      // Sanitize: filter out malformed entries and merge missing fields with DEFAULT_FORM
-      return parsed
-        .filter(inv => inv && inv.id && inv.form && typeof inv.form === 'object')
-        .map(inv => ({
-          ...inv,
-          form: { ...DEFAULT_FORM, ...inv.form, items: Array.isArray(inv.form.items) && inv.form.items.length > 0 ? inv.form.items : DEFAULT_FORM.items },
-        }))
-    } catch (e) {
-      console.warn('Failed to load invoice history, clearing corrupted data:', e)
-      localStorage.removeItem('invoiceHistory')
-      return []
-    }
-  })
-
-  const [senderProfile, setSenderProfile] = useState(() => {
-    try {
-      const saved = localStorage.getItem('senderProfile')
-      return saved ? JSON.parse(saved) : { fromName: '', fromPhone: '', fromEmail: '', logo: null }
-    } catch (e) {
-      return { fromName: '', fromPhone: '', fromEmail: '', logo: null }
-    }
-  })
-
-  const [currentInvoiceId, setCurrentInvoiceId] = useState(null)
-  const [form, setForm] = useState(DEFAULT_FORM)
-
-  // Initialize first invoice if none exist
-  useEffect(() => {
-    if (invoices.length === 0) {
-      const initialInvoice = {
-        id: Date.now().toString(),
-        form: {
-          ...DEFAULT_FORM,
-          invoiceNumber: generateInvoiceNumber(),
-          fromName: senderProfile.fromName,
-          fromPhone: senderProfile.fromPhone,
-          fromEmail: senderProfile.fromEmail,
-          logo: senderProfile.logo,
-        },
+      if (Array.isArray(parsed)) {
+        invoices = parsed
+          .filter(inv => inv && inv.id && inv.form && typeof inv.form === 'object')
+          .map(inv => ({
+            ...inv,
+            form: { ...DEFAULT_FORM, ...inv.form, items: Array.isArray(inv.form.items) && inv.form.items.length > 0 ? inv.form.items : DEFAULT_FORM.items },
+          }))
       }
-      setInvoices([initialInvoice])
-      setCurrentInvoiceId(initialInvoice.id)
-      setForm(initialInvoice.form)
-    } else if (!currentInvoiceId) {
-      setCurrentInvoiceId(invoices[0].id)
-      setForm(invoices[0].form)
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  } catch (e) {
+    console.warn('Failed to load invoice history, clearing corrupted data:', e)
+    localStorage.removeItem('invoiceHistory')
+  }
+
+  if (invoices.length === 0) {
+    const newInvoice = {
+      id: Date.now().toString(),
+      form: {
+        ...DEFAULT_FORM,
+        invoiceNumber: generateInvoiceNumber(),
+        fromName: senderProfile.fromName,
+        fromPhone: senderProfile.fromPhone,
+        fromEmail: senderProfile.fromEmail,
+        logo: senderProfile.logo,
+      },
+    }
+    return { invoices: [newInvoice], currentInvoiceId: newInvoice.id, form: newInvoice.form, senderProfile }
+  }
+
+  return { invoices, currentInvoiceId: invoices[0].id, form: invoices[0].form, senderProfile }
+}
+
+export default function App() {
+  const [{ invoices: _invoices, currentInvoiceId: _currentId, form: _form, senderProfile: _profile }] = useState(getInitialAppState)
+  const [invoices, setInvoices] = useState(_invoices)
+  const [senderProfile, setSenderProfile] = useState(_profile)
+  const [currentInvoiceId, setCurrentInvoiceId] = useState(_currentId)
+  const [form, setForm] = useState(_form)
 
   const [saveStatus, setSaveStatus] = useState('')
   const [exporting, setExporting] = useState(false)
