@@ -81,7 +81,7 @@ export default function App() {
       setCurrentInvoiceId(invoices[0].id)
       setForm(invoices[0].form)
     }
-  }, [])
+  }, [invoices, senderProfile, currentInvoiceId])
 
   const [saveStatus, setSaveStatus] = useState('')
   const [exporting, setExporting] = useState(false)
