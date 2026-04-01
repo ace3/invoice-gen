@@ -15,7 +15,7 @@ const Preview = forwardRef(function Preview({ form, currency, subtotal, taxAmoun
         <div className="inv-title-row">
           {form.logo && <img src={form.logo} className="inv-logo" alt="logo" />}
           <h1 className="inv-title">
-            Project {form.docType} {form.billTo.split('\n')[0]}
+            {form.projectTitle || 'Project Invoice'}
           </h1>
         </div>
         <h2 className="inv-doc-type">{form.docType.toUpperCase()}</h2>

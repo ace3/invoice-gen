@@ -54,6 +54,17 @@ export default function Form({ form, setForm, currencies, subtotal, taxAmount, t
 
   const set = (key, value) => setForm(prev => ({ ...prev, [key]: value }))
 
+  const generateInvoiceNumber = () => {
+    const now = new Date()
+    const date = now.toISOString().split('T')[0].replace(/-/g, '')
+    const rand = Math.random().toString(36).substring(2, 6).toUpperCase()
+    set('invoiceNumber', `INV-${date}-${rand}`)
+  }
+
+  const resetDate = () => {
+    set('date', new Date().toISOString().split('T')[0])
+  }
+
   const setItem = (id, key, value) => {
     setForm(prev => ({
       ...prev,
@@ -99,7 +110,26 @@ export default function Form({ form, setForm, currencies, subtotal, taxAmount, t
         <div className="field-row">
           <div className="field">
             <label>{form.docType} #</label>
-            <input value={form.invoiceNumber} onChange={e => set('invoiceNumber', e.target.value)} />
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <input value={form.invoiceNumber} onChange={e => set('invoiceNumber', e.target.value)} style={{ flex: 1 }} />
+              <button
+                type="button"
+                onClick={generateInvoiceNumber}
+                style={{
+                  padding: '8px 10px',
+                  background: '#1f1f1f',
+                  border: '1px solid #2a2a2a',
+                  color: '#f0f0f0',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Generate
+              </button>
+            </div>
           </div>
           <div className="field">
             <label>Currency</label>
@@ -114,12 +144,40 @@ export default function Form({ form, setForm, currencies, subtotal, taxAmount, t
         <div className="field-row">
           <div className="field">
             <label>Date</label>
-            <input type="date" value={form.date} onChange={e => set('date', e.target.value)} />
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <input type="date" value={form.date} onChange={e => set('date', e.target.value)} style={{ flex: 1 }} />
+              <button
+                type="button"
+                onClick={resetDate}
+                style={{
+                  padding: '8px 10px',
+                  background: '#1f1f1f',
+                  border: '1px solid #2a2a2a',
+                  color: '#f0f0f0',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Today
+              </button>
+            </div>
           </div>
           <div className="field">
             <label>Due Date</label>
             <input type="date" value={form.dueDate} onChange={e => set('dueDate', e.target.value)} />
           </div>
+        </div>
+      </div>
+
+      {/* Project Title */}
+      <div className="form-section">
+        <div className="section-label">Project Title</div>
+        <div className="field">
+          <label>Title</label>
+          <input value={form.projectTitle} onChange={e => set('projectTitle', e.target.value)} placeholder="Enter project title" />
         </div>
       </div>
 

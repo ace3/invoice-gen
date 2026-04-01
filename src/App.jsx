@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import Form from './components/Form'
 import Preview from './components/Preview'
 import './App.css'
@@ -22,6 +22,7 @@ export const DEFAULT_FORM = {
   invoiceNumber: generateInvoiceNumber(),
   date: new Date().toISOString().split('T')[0],
   dueDate: '',
+  projectTitle: '',
   fromName: '',
   fromPhone: '',
   fromEmail: '',
@@ -39,8 +40,21 @@ export const DEFAULT_FORM = {
 }
 
 export default function App() {
-  const [form, setForm] = useState(DEFAULT_FORM)
+  const [form, setForm] = useState(() => {
+    const saved = localStorage.getItem('invoiceForm')
+    return saved ? JSON.parse(saved) : DEFAULT_FORM
+  })
+  const [saveStatus, setSaveStatus] = useState('')
   const [exporting, setExporting] = useState(false)
+
+  useEffect(() => {
+    localStorage.setItem('invoiceForm', JSON.stringify(form))
+  }, [form])
+
+  const handleSave = () => {
+    setSaveStatus('Saved!')
+    setTimeout(() => setSaveStatus(''), 2000)
+  }
   const previewRef = useRef(null)
 
   const currency = CURRENCIES.find(c => c.code === form.currency) || CURRENCIES[0]
@@ -73,6 +87,9 @@ export default function App() {
           <span className="brand-name">InvoiceForge</span>
         </div>
         <div className="header-actions">
+          <button className="btn-ghost" onClick={handleSave}>
+            {saveStatus || '💾 Save'}
+          </button>
           <button className="btn-ghost" onClick={() => window.print()}>Print</button>
           <button className="btn-primary" onClick={handleExport} disabled={exporting}>
             {exporting ? 'Exporting…' : '↓ Export PDF'}
