@@ -98,6 +98,20 @@ body {
   overflow: hidden;
 }
 
+/* ── List Panel ── */
+.list-panel {
+  width: 160px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
+  padding: 12px;
+}
+.list-panel::-webkit-scrollbar { width: 4px; }
+.list-panel::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
 /* ── Form Panel ── */
 .form-panel {
   width: 360px;
@@ -331,9 +345,35 @@ body {
 }
 .logo-btn:hover { border-color: var(--border2); color: var(--text); }
 
+/* ── Mobile Responsive ── */
+@media (max-width: 1200px) {
+  .list-panel { width: 120px; padding: 8px; }
+  .form-panel { width: 280px; }
+  .preview-panel { padding: 16px; }
+  .preview-scaler { max-width: 600px; }
+}
+
+@media (max-width: 900px) {
+  .app-body {
+    flex-direction: column;
+  }
+  .list-panel, .form-panel {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    max-height: 35vh;
+  }
+  .list-panel { padding: 12px; }
+  .preview-panel {
+    flex: 1;
+    padding: 16px;
+  }
+  .preview-scaler { max-width: 100%; }
+}
+
 /* ── Print styles ── */
 @media print {
-  .app-header, .form-panel { display: none !important; }
+  .app-header, .form-panel, .list-panel { display: none !important; }
   .app-body { display: block; }
   .preview-panel { padding: 0; background: none; }
   .preview-scaler { max-width: 100%; box-shadow: none; }

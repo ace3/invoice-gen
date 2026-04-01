@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import Form from './components/Form'
 import Preview from './components/Preview'
+import InvoiceList from './components/InvoiceList'
+import { generateInvoiceNumber } from './utils'
 import './App.css'
 
 export const CURRENCIES = [
@@ -9,13 +11,6 @@ export const CURRENCIES = [
   { code: 'EUR', symbol: '€', format: (n) => `€${Number(n).toLocaleString('de-DE', { minimumFractionDigits: 2 })}` },
   { code: 'SGD', symbol: 'S$', format: (n) => `S$${Number(n).toLocaleString('en-SG', { minimumFractionDigits: 2 })}` },
 ]
-
-function generateInvoiceNumber() {
-  const now = new Date()
-  const date = now.toISOString().split('T')[0].replace(/-/g, '')
-  const rand = Math.random().toString(36).substring(2, 6).toUpperCase()
-  return `INV-${date}-${rand}`
-}
 
 export const DEFAULT_FORM = {
   docType: 'Invoice',
@@ -28,7 +23,10 @@ export const DEFAULT_FORM = {
   fromEmail: '',
   billTo: '',
   currency: 'IDR',
+  discount: 0,
   taxRate: 0,
+  taxLabel: 'Tax',
+  status: 'Draft',
   notes: 'Thank you for your business!',
   bankName: '',
   accountNumber: '',
@@ -40,27 +38,137 @@ export const DEFAULT_FORM = {
 }
 
 export default function App() {
-  const [form, setForm] = useState(() => {
-    const saved = localStorage.getItem('invoiceForm')
-    return saved ? JSON.parse(saved) : DEFAULT_FORM
+  const [invoices, setInvoices] = useState(() => {
+    try {
+      const saved = localStorage.getItem('invoiceHistory')
+      return saved ? JSON.parse(saved) : []
+    } catch (e) {
+      console.warn('Failed to load invoice history:', e)
+      return []
+    }
   })
+
+  const [senderProfile, setSenderProfile] = useState(() => {
+    try {
+      const saved = localStorage.getItem('senderProfile')
+      return saved ? JSON.parse(saved) : { fromName: '', fromPhone: '', fromEmail: '', logo: null }
+    } catch (e) {
+      return { fromName: '', fromPhone: '', fromEmail: '', logo: null }
+    }
+  })
+
+  const [currentInvoiceId, setCurrentInvoiceId] = useState(null)
+  const [form, setForm] = useState(DEFAULT_FORM)
+
+  // Initialize first invoice if none exist
+  useEffect(() => {
+    if (invoices.length === 0) {
+      const initialInvoice = {
+        id: Date.now().toString(),
+        form: {
+          ...DEFAULT_FORM,
+          invoiceNumber: generateInvoiceNumber(),
+          fromName: senderProfile.fromName,
+          fromPhone: senderProfile.fromPhone,
+          fromEmail: senderProfile.fromEmail,
+          logo: senderProfile.logo,
+        },
+      }
+      setInvoices([initialInvoice])
+      setCurrentInvoiceId(initialInvoice.id)
+      setForm(initialInvoice.form)
+    } else if (!currentInvoiceId) {
+      setCurrentInvoiceId(invoices[0].id)
+      setForm(invoices[0].form)
+    }
+  }, [])
+
   const [saveStatus, setSaveStatus] = useState('')
   const [exporting, setExporting] = useState(false)
 
+  // Save invoices to localStorage
   useEffect(() => {
-    localStorage.setItem('invoiceForm', JSON.stringify(form))
-  }, [form])
+    localStorage.setItem('invoiceHistory', JSON.stringify(invoices))
+  }, [invoices])
+
+  // Save sender profile to localStorage
+  useEffect(() => {
+    localStorage.setItem('senderProfile', JSON.stringify(senderProfile))
+  }, [senderProfile])
+
+  // Auto-update current invoice when form changes
+  useEffect(() => {
+    if (currentInvoiceId) {
+      setInvoices(prev =>
+        prev.map(inv =>
+          inv.id === currentInvoiceId ? { ...inv, form } : inv
+        )
+      )
+    }
+  }, [form, currentInvoiceId])
+
+  const handleNewInvoice = () => {
+    const newInvoice = {
+      id: Date.now().toString(),
+      form: {
+        ...DEFAULT_FORM,
+        invoiceNumber: generateInvoiceNumber(),
+        fromName: senderProfile.fromName,
+        fromPhone: senderProfile.fromPhone,
+        fromEmail: senderProfile.fromEmail,
+        logo: senderProfile.logo,
+      },
+    }
+    setInvoices(prev => [newInvoice, ...prev])
+    setCurrentInvoiceId(newInvoice.id)
+    setForm(newInvoice.form)
+  }
+
+  const handleSelectInvoice = (id) => {
+    const inv = invoices.find(i => i.id === id)
+    if (inv) {
+      setCurrentInvoiceId(id)
+      setForm(inv.form)
+    }
+  }
+
+  const handleDeleteInvoice = (id) => {
+    if (window.confirm('Delete this invoice? This cannot be undone.')) {
+      setInvoices(prev => prev.filter(inv => inv.id !== id))
+      if (currentInvoiceId === id) {
+        const remaining = invoices.filter(inv => inv.id !== id)
+        if (remaining.length > 0) {
+          setCurrentInvoiceId(remaining[0].id)
+          setForm(remaining[0].form)
+        } else {
+          handleNewInvoice()
+        }
+      }
+    }
+  }
 
   const handleSave = () => {
     setSaveStatus('Saved!')
     setTimeout(() => setSaveStatus(''), 2000)
   }
+
+  // Update sender profile when form changes
+  useEffect(() => {
+    setSenderProfile({
+      fromName: form.fromName,
+      fromPhone: form.fromPhone,
+      fromEmail: form.fromEmail,
+      logo: form.logo,
+    })
+  }, [form.fromName, form.fromPhone, form.fromEmail, form.logo])
   const previewRef = useRef(null)
 
   const currency = CURRENCIES.find(c => c.code === form.currency) || CURRENCIES[0]
   const subtotal = form.items.reduce((sum, item) => sum + (item.qty * item.rate), 0)
-  const taxAmount = Math.round(subtotal * (form.taxRate / 100))
-  const total = subtotal + taxAmount
+  const discountAmount = Math.round(subtotal * (form.discount / 100))
+  const afterDiscount = subtotal - discountAmount
+  const taxAmount = Math.round(afterDiscount * (form.taxRate / 100))
+  const total = afterDiscount + taxAmount
 
   const handleExport = useCallback(async () => {
     setExporting(true)
@@ -98,12 +206,22 @@ export default function App() {
       </header>
 
       <div className="app-body">
+        <aside className="list-panel">
+          <InvoiceList
+            invoices={invoices}
+            currentId={currentInvoiceId}
+            onSelect={handleSelectInvoice}
+            onDelete={handleDeleteInvoice}
+            onCreate={handleNewInvoice}
+          />
+        </aside>
         <aside className="form-panel">
           <Form
             form={form}
             setForm={setForm}
             currencies={CURRENCIES}
             subtotal={subtotal}
+            discountAmount={discountAmount}
             taxAmount={taxAmount}
             total={total}
             currency={currency}
@@ -116,6 +234,7 @@ export default function App() {
               form={form}
               currency={currency}
               subtotal={subtotal}
+              discountAmount={discountAmount}
               taxAmount={taxAmount}
               total={total}
             />

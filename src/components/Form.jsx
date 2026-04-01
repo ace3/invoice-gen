@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
+import { generateInvoiceNumber } from '../utils'
 
-export default function Form({ form, setForm, currencies, subtotal, taxAmount, total, currency }) {
+export default function Form({ form, setForm, currencies, subtotal, discountAmount, taxAmount, total, currency }) {
   const logoInputRef = useRef(null)
   const [password, setPassword] = useState('')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -22,7 +23,7 @@ export default function Form({ form, setForm, currencies, subtotal, taxAmount, t
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleAuth()}
+          onKeyDown={(e) => e.key === 'Enter' && handleAuth()}
           placeholder="Enter password"
           style={{
             width: '100%',
@@ -54,11 +55,8 @@ export default function Form({ form, setForm, currencies, subtotal, taxAmount, t
 
   const set = (key, value) => setForm(prev => ({ ...prev, [key]: value }))
 
-  const generateInvoiceNumber = () => {
-    const now = new Date()
-    const date = now.toISOString().split('T')[0].replace(/-/g, '')
-    const rand = Math.random().toString(36).substring(2, 6).toUpperCase()
-    set('invoiceNumber', `INV-${date}-${rand}`)
+  const handleGenerateInvoiceNumber = () => {
+    set('invoiceNumber', generateInvoiceNumber())
   }
 
   const resetDate = () => {
@@ -114,7 +112,7 @@ export default function Form({ form, setForm, currencies, subtotal, taxAmount, t
               <input value={form.invoiceNumber} onChange={e => set('invoiceNumber', e.target.value)} style={{ flex: 1 }} />
               <button
                 type="button"
-                onClick={generateInvoiceNumber}
+                onClick={handleGenerateInvoiceNumber}
                 style={{
                   padding: '8px 10px',
                   background: '#1f1f1f',
@@ -172,12 +170,23 @@ export default function Form({ form, setForm, currencies, subtotal, taxAmount, t
         </div>
       </div>
 
-      {/* Project Title */}
+      {/* Project Title & Status */}
       <div className="form-section">
         <div className="section-label">Project Title</div>
         <div className="field">
           <label>Title</label>
           <input value={form.projectTitle} onChange={e => set('projectTitle', e.target.value)} placeholder="Enter project title" />
+        </div>
+        <div className="field-row">
+          <div className="field">
+            <label>Status</label>
+            <select value={form.status} onChange={e => set('status', e.target.value)}>
+              <option value="Draft">Draft</option>
+              <option value="Sent">Sent</option>
+              <option value="Paid">Paid</option>
+              <option value="Overdue">Overdue</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -266,6 +275,24 @@ export default function Form({ form, setForm, currencies, subtotal, taxAmount, t
         <button className="btn-add-item" onClick={addItem}>+ Add Item</button>
 
         <div className="totals-summary" style={{ marginTop: 12 }}>
+          <div className="field-row" style={{ marginBottom: 8 }}>
+            <div className="field">
+              <label>Discount (%)</label>
+              <input
+                type="number" min="0" max="100" step="0.1"
+                value={form.discount}
+                onChange={e => set('discount', +e.target.value)}
+              />
+            </div>
+            <div className="field">
+              <label>Tax Label</label>
+              <input
+                type="text"
+                value={form.taxLabel}
+                onChange={e => set('taxLabel', e.target.value)}
+              />
+            </div>
+          </div>
           <div className="field" style={{ marginBottom: 8 }}>
             <label>Tax Rate (%)</label>
             <input
@@ -275,7 +302,8 @@ export default function Form({ form, setForm, currencies, subtotal, taxAmount, t
             />
           </div>
           <div className="totals-row"><span>Subtotal</span><span>{currency.format(subtotal)}</span></div>
-          <div className="totals-row"><span>Tax ({form.taxRate}%)</span><span>{currency.format(taxAmount)}</span></div>
+          {form.discount > 0 && <div className="totals-row"><span>Discount ({form.discount}%)</span><span>-{currency.format(discountAmount)}</span></div>}
+          <div className="totals-row"><span>{form.taxLabel} ({form.taxRate}%)</span><span>{currency.format(taxAmount)}</span></div>
           <div className="totals-row total-row"><span>Total</span><span>{currency.format(total)}</span></div>
         </div>
       </div>
