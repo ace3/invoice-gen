@@ -41,9 +41,19 @@ export default function App() {
   const [invoices, setInvoices] = useState(() => {
     try {
       const saved = localStorage.getItem('invoiceHistory')
-      return saved ? JSON.parse(saved) : []
+      if (!saved) return []
+      const parsed = JSON.parse(saved)
+      if (!Array.isArray(parsed)) return []
+      // Sanitize: filter out malformed entries and merge missing fields with DEFAULT_FORM
+      return parsed
+        .filter(inv => inv && inv.id && inv.form && typeof inv.form === 'object')
+        .map(inv => ({
+          ...inv,
+          form: { ...DEFAULT_FORM, ...inv.form, items: Array.isArray(inv.form.items) && inv.form.items.length > 0 ? inv.form.items : DEFAULT_FORM.items },
+        }))
     } catch (e) {
-      console.warn('Failed to load invoice history:', e)
+      console.warn('Failed to load invoice history, clearing corrupted data:', e)
+      localStorage.removeItem('invoiceHistory')
       return []
     }
   })
@@ -81,7 +91,7 @@ export default function App() {
       setCurrentInvoiceId(invoices[0].id)
       setForm(invoices[0].form)
     }
-  }, [invoices, senderProfile, currentInvoiceId])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [saveStatus, setSaveStatus] = useState('')
   const [exporting, setExporting] = useState(false)
