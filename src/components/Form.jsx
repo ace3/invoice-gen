@@ -1,57 +1,8 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { generateInvoiceNumber } from '../utils'
 
 export default function Form({ form, setForm, currencies, subtotal, discountAmount, taxAmount, total, currency }) {
   const logoInputRef = useRef(null)
-  const [password, setPassword] = useState('')
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-
-  const handleAuth = () => {
-    if (password === 'password') {
-      setIsAuthenticated(true)
-    } else {
-      alert('Invalid password')
-      setPassword('')
-    }
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', justifyContent: 'center', minHeight: '100%' }}>
-        <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Authentication Required</div>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleAuth()}
-          placeholder="Enter password"
-          style={{
-            width: '100%',
-            padding: '8px 10px',
-            background: '#1f1f1f',
-            border: '1px solid #2a2a2a',
-            color: '#f0f0f0',
-            borderRadius: '6px',
-            fontSize: '12px',
-          }}
-        />
-        <button
-          onClick={handleAuth}
-          style={{
-            padding: '8px',
-            background: '#e8ff00',
-            border: 'none',
-            color: '#000',
-            borderRadius: '6px',
-            fontWeight: '600',
-            cursor: 'pointer',
-          }}
-        >
-          Unlock
-        </button>
-      </div>
-    )
-  }
 
   const set = (key, value) => setForm(prev => ({ ...prev, [key]: value }))
 

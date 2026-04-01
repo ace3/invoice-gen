@@ -36,7 +36,7 @@ const Preview = forwardRef(function Preview({ form, currency, subtotal, discount
             )}
           </div>
         </div>
-        <h2 className="inv-doc-type">{form.docType.toUpperCase()}</h2>
+        <h2 className="inv-doc-type">{(form.docType || 'Invoice').toUpperCase()}</h2>
       </div>
 
       {/* Meta 3-col */}
@@ -49,7 +49,7 @@ const Preview = forwardRef(function Preview({ form, currency, subtotal, discount
         </div>
         <div className="inv-meta-col">
           <p className="meta-label">Bill To:</p>
-          {form.billTo.split('\n').map((line, i) => (
+          {(form.billTo || '').split('\n').map((line, i) => (
             <p key={i} className="meta-val">{line}</p>
           ))}
         </div>
