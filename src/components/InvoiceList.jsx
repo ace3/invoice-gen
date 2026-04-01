@@ -1,3 +1,12 @@
+import React from 'react'
+
+function formatInvoiceDate(dateValue) {
+  if (!dateValue) return '-'
+  const parsed = new Date(dateValue)
+  if (Number.isNaN(parsed.getTime())) return '-'
+  return parsed.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+}
+
 export default function InvoiceList({ invoices, currentId, onSelect, onDelete, onCreate }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -47,7 +56,7 @@ export default function InvoiceList({ invoices, currentId, onSelect, onDelete, o
                 </div>
                 <div style={{ fontSize: '9px', color: '#888', display: 'flex', gap: '4px', marginTop: '2px' }}>
                   <span>
-                    {new Date(inv.form.date).toLocaleDateString('en-GB', { day: 'short', month: 'short' })}
+                    {formatInvoiceDate(inv.form.date)}
                   </span>
                   {inv.form.status && (
                     <span style={{
